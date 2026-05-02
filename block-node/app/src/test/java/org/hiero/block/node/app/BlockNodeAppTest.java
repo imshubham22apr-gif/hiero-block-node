@@ -28,6 +28,7 @@ import org.hiero.block.api.RosterEntry;
 import org.hiero.block.api.TssData;
 import org.hiero.block.api.TssRoster;
 import org.hiero.block.node.app.config.node.NodeConfig;
+import org.hiero.block.node.app.config.state.ApplicationStateConfig;
 import org.hiero.block.node.app.fixtures.plugintest.TestBlockMessagingFacility;
 import org.hiero.block.node.base.ranges.ConcurrentLongRangeSet;
 import org.hiero.block.node.spi.BlockNodeContext;
@@ -75,7 +76,7 @@ class BlockNodeAppTest {
 
     @BeforeEach
     void setUp() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        System.setProperty("block.node.appStateDataFilePath", tempDir.resolve("app-state-data.bin").toString());
+        System.setProperty("appState.appStateDataFilePath", tempDir.resolve("app-state-data.bin").toString());
         MockitoAnnotations.openMocks(this);
         // minimal plugin mocks
         plugin1 = createMockedPlugin(1, BlockNodePlugin.class);
@@ -340,7 +341,7 @@ class BlockNodeAppTest {
         final Path appStateDataFilePath = blockNodeApp
                 .blockNodeContext
                 .configuration()
-                .getConfigData(NodeConfig.class)
+                .getConfigData(ApplicationStateConfig.class)
                 .appStateDataFilePath();
 
         Files.deleteIfExists(appStateDataFilePath);
