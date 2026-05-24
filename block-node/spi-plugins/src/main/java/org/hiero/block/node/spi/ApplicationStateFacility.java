@@ -3,6 +3,7 @@ package org.hiero.block.node.spi;
 
 import com.hedera.hapi.node.base.NodeAddressBook;
 import org.hiero.block.api.TssData;
+import org.hiero.block.node.spi.historicalblocks.BlockRangeSet;
 import org.hiero.block.node.spi.historicalblocks.LongRange;
 
 /**
@@ -44,4 +45,20 @@ public interface ApplicationStateFacility {
      * @param blockRange the contiguous range of block numbers being reported
      */
     void addAvailableBlockRange(LongRange blockRange);
+
+    /**
+     * Get the set of block ranges that are stored in the node.
+     * @return the set of stored block ranges
+     */
+    default BlockRangeSet storedBlocks() {
+        return null;
+    }
+
+    /**
+     * Get the set of block ranges that are available in the node.
+     * @return the set of available block ranges
+     */
+    default BlockRangeSet availableBlocks() {
+        return null;
+    }
 }

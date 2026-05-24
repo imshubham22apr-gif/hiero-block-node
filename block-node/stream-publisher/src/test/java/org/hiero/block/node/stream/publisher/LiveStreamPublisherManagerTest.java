@@ -41,6 +41,7 @@ import org.hiero.block.node.app.fixtures.plugintest.SimpleInMemoryHistoricalBloc
 import org.hiero.block.node.app.fixtures.plugintest.TestBlockMessagingFacility;
 import org.hiero.block.node.spi.ApplicationStateFacility;
 import org.hiero.block.node.spi.BlockNodeContext;
+import org.hiero.block.node.spi.historicalblocks.BlockRangeSet;
 import org.hiero.block.node.spi.ServiceLoaderFunction;
 import org.hiero.block.node.spi.blockmessaging.BlockItems;
 import org.hiero.block.node.spi.blockmessaging.BlockMessagingFacility;
@@ -438,6 +439,62 @@ class LiveStreamPublisherManagerTest {
                 final long actual = localToTest.getLatestBlockNumber();
                 // Assert that the latest block number is now 0.
                 assertThat(actual).isEqualTo(block.number());
+            }
+
+            @Test
+            @DisplayName("getLatestBlockNumber() returns latest persisted block number from ApplicationStateFacility during construction")
+            void testLatestBlockNumberFromApplicationStateDuringConstruction() {
+                final SimpleInMemoryHistoricalBlockFacility localHistoricalBlockFacility =
+                        new SimpleInMemoryHistoricalBlockFacility();
+                final TestBlock block = TestBlockBuilder.generateBlockWithNumber(0);
+                
+                final SimpleBlockRangeSet appStateRanges = new SimpleBlockRangeSet();
+                appStateRanges.add(block.number());
+                
+                final ApplicationStateFacility mockAppStateFacility = new ApplicationStateFacility() {
+                    @Override
+                    public void updateTssData(org.hiero.block.api.TssData tssData) {}
+
+                    @Override
+                    public boolean updateAddressBook(com.hedera.hapi.node.base.NodeAddressBook nodeAddressBook) {
+                        return false;
+                    }
+
+                    @Override
+                    public void addStoredBlockRange(org.hiero.block.node.spi.historicalblocks.LongRange blockRange) {}
+
+                    @Override
+                    public void addAvailableBlockRange(org.hiero.block.node.spi.historicalblocks.LongRange blockRange) {}
+
+                    @Override
+                    public BlockRangeSet storedBlocks() {
+                        return appStateRanges;
+                    }
+                };
+
+                final ThreadPoolManager threadPoolManager = new TestThreadPoolManager<>(
+                        new BlockingExecutor(new LinkedBlockingQueue<>()),
+                        new ScheduledBlockingExecutor(new LinkedBlockingQueue<>()));
+                final BlockMessagingFacility messagingFacility = new TestBlockMessagingFacility();
+                final Configuration configuration = TestStreamPublisherManager.createTestConfiguration();
+                
+                final BlockNodeContext localContext = new BlockNodeContext(
+                        configuration,
+                        TestUtils.createMetrics(),
+                        null,
+                        messagingFacility,
+                        localHistoricalBlockFacility,
+                        mockAppStateFacility,
+                        null,
+                        threadPoolManager,
+                        BlockNodeVersions.DEFAULT,
+                        null,
+                        null);
+
+                final LiveStreamPublisherManager localToTest = new LiveStreamPublisherManager(
+                        localContext, generateManagerMetrics());
+                        
+                assertThat(localToTest.getLatestBlockNumber()).isEqualTo(block.number());
             }
         }
 

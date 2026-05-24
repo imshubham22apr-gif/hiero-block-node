@@ -64,6 +64,7 @@ import org.hiero.block.node.spi.ServiceLoaderFunction;
 import org.hiero.block.node.spi.blockmessaging.BlockMessagingFacility;
 import org.hiero.block.node.spi.health.HealthFacility;
 import org.hiero.block.node.spi.historicalblocks.LongRange;
+import org.hiero.block.node.spi.historicalblocks.BlockRangeSet;
 import org.hiero.block.node.spi.module.SemanticVersionUtility;
 import org.hiero.block.node.spi.threading.ThreadPoolManager;
 import org.hiero.metrics.ObservableGauge;
@@ -781,5 +782,15 @@ public class BlockNodeApp implements HealthFacility, ApplicationStateFacility {
             throw new IllegalStateException("RSA address book from " + source + " has "
                     + book.nodeAddress().size() + " entries but none have a valid RSA_PubKey");
         }
+    }
+
+    @Override
+    public BlockRangeSet availableBlocks() {
+        return availableBlocks;
+    }
+
+    @Override
+    public BlockRangeSet storedBlocks() {
+        return storedBlocks;
     }
 }
